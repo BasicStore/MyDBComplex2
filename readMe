@@ -114,7 +114,7 @@ session.beginTransaction();
 session.saveOrUpdate(u);
 session.getTransaction().commit();
 ----------------------------------------------------
-Further notes:
+Further notes: ------------------------------------
 
 
 
