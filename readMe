@@ -1,0 +1,127 @@
+PROJECT: MyMavenComplex
+Simple standalone hibernate app for poc with h2 and using more complex objects and relationships.
+There is a web front end to plug in if desired
+
+----------------------------------------------------
+BUILD AND RUN PROJECT WITH MAVEN:
+./mvnw clean package
+java -jar target/MyMavenComplex-0.0.1-SNAPSHOT.jar
+
+
+BUILD AND RUN:
+./mvnw spring-boot:run
+
+BUILD AND RUN AS MAVEN PROJECT FROM ECLIPSE
+Right click project - > Run As -> Maven Build.
+In the goals, enter spring-boot:run
+
+BUILD AND DEBUG AS MAVEN PROJECT FROM ECLIPSE
+Just right click on the main() method and choose 
+"Debug As... Java Application"?
+
+----------------------------------------------------
+
+H2 console can be viewed (as it was enabled in the application.properties): 
+http://localhost:8080/h2-console
+Use JDBC URL ==> jdbc:h2:mem:testdb
+
+Spring Boot Auto Configuration sees H2 in the classpath. It understands that we would want to talk to an in memory database. 
+It auto configures a datasource and also a JdbcTemplate connecting to that datasource.
+
+----------------------------------------------------
+SIMPLE OBJECTS MAPPING RUN STEPS:
+
+1) Add domain objects and interface so that hibernate creates the DDL
+   Note the interface repository objects are (evidently) not implemented explicitly from the dm object!
+2) Configure to run the H2 console
+3) Add tracing and logging properties
+4) Load DML directly via an sql text file within the application properties
+5) Test from main application extending CommandLineRunner so that the run() method can be overridden: log from this location
+   
+----------------------------------------------------   
+ADD A MANY TO MANY RELATIONSHIP:
+
+eg.  Student v CollegeComputer
+     - add @ManyToMany annotations on both
+     - on start up hibernate will create the DDL (including the relationship table)
+     - test by invoking saveAll() method, first on the child then the parent
+
+select * from student s
+inner join student_college_computers scc on scc.students_id = s.id
+inner join college_computer cc on cc.id = scc.college_computers_id 
+
+----------------------------------------------------
+ADD A ONE TO MANY PRIMITIVE RELATIONSHIP:
+
+See annotation in Student:
+    ElementCollection in 
+    @JoinTable(
+        name="student_tel_nums",  // the new table name
+        joinColumns = @JoinColumn( name="student_id") // the link to students
+      )
+    @Column(name="telNums") // the link to telephone numbers
+	private List<String> telNumbers;
+
+select s.*,  stn.tel_nums 
+from student s
+inner join student_tel_nums stn on stn.student_id = s.id
+
+----------------------------------------------------
+ADD A ONE TO MANY OBJECT RELATIONSHIP:
+
+Don't forget to save the relationship objects first. 
+    eg. save cats before adding to a student's cat set! 
+
+select c.*, scs.* from student s
+inner join student_cat_set scs on scs.student_id = s.id
+inner join cat c on scs.cat_set_id = c.id
+
+----------------------------------------------------
+ADD A ONE TO ONE OBJECT RELATIONSHIP:
+
+select s.*, c.*
+from student s
+inner join course c on s.course_id = c .id
+
+----------------------------------------------------
+Lazy v Eager Initialization
+
+- with laxy initialization, when an object is loaded from the database, the
+  relationships are not mapped - until they are specifically requested
+  + helps when getting large set of objects
+  - when trying to access a specific object relationship, hibernate needs to
+    make a further database call
+    
+    Note that the call must also be on the same session or a 
+    LazyInitializationException will be thrown
+    
+----------------------------------------------------
+Sporing BOOT external db example: https://www.devglan.com/spring-boot/spring-boot-hibernate-5-example
+
+spring.datasource.url=jdbc:mysql://localhost:3306/test
+spring.datasource.username=root
+spring.datasource.password=root
+spring.jpa.show-sql=true
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.hibernate.naming.physical-strategy=org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQL5InnoDBDialect
+
+----------------------------------------------------
+Non-Spring Boot: factory-session-transaction-operation-commit
+
+Session session = HibernateUtil.getSessionFactory().getCurrentSession();
+session.beginTransaction();
+session.saveOrUpdate(u);
+session.getTransaction().commit();
+----------------------------------------------------
+Further notes:
+
+
+
+
+
+
+
+
+
+
