@@ -1,6 +1,7 @@
 PROJECT: MyMavenComplex
-Simple standalone hibernate app for poc with h2 and using more complex objects and relationships.
-There is a web front end to plug in if desired
+
+Simple standalone hibernate app for poc with h2 + MySQL, using primitive types, dates, enums,
+complex objects and relationships.
 
 ----------------------------------------------------
 BUILD AND RUN PROJECT WITH MAVEN:
